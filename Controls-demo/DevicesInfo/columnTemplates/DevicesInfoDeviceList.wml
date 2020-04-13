@@ -1,0 +1,26 @@
+<ws:partial template="Controls/grid:ColumnTemplate" attr:class="js-controls-ListView__notEditable controls-Grid__row-cell__content_baseline_L" itemData="{{itemData}}">
+    <ws:contentTemplate>
+        <ws:if data="{{itemData.item['Мое'] === true || itemData.item['Status'] === 1}}">
+            <div class="icon-16 activity_DevicesTrusted-ListDevice-indicator
+                        activity_DevicesTrusted-ListDevice-indicator-active"></div>
+        </ws:if>
+        <ws:else data="{{itemData.item['Status'] === false}}">
+            <div class="icon-16 activity_DevicesTrusted-ListDevice-indicator
+                        activity_DevicesTrusted-ListDevice-indicator-inactive"></div>
+        </ws:else>
+       <div class="DeviceInfo-deviceItem-wrapper">
+           <div class="activity-DevicesTrusted_ListDevice-device">
+               {{itemData.item['Название']}}
+           </div>
+
+           <div class="activity-DevicesTrusted_ListDevice-platform">
+               {{itemData.item['Браузер']}}
+           </div>
+<!--           <ws:if data="{{itemData.item['error']}}">-->
+<!--               <div class="activity-DevicesTrusted_ListDevice-error">-->
+<!--                   {{itemData.item['error']}}-->
+<!--               </div>-->
+<!--           </ws:if>-->
+       </div>
+    </ws:contentTemplate>
+</ws:partial>

@@ -1,0 +1,12 @@
+<ws:partial template="Controls/grid:ColumnTemplate" itemData="{{itemData}}">
+    <ws:contentTemplate>
+       <div class="DeviceInfo-iconList-wrapper">
+           <ws:if data="{{itemData.item['entryTypeIconData'].icon}}">
+               <div title="{{itemData.item['entryTypeIconData'].title}}" class="{{itemData.item['entryTypeIconData'].icon}}"></div>
+           </ws:if>
+           <ws:if data="{{itemData.item['deviceIconData'].icon}}">
+               <div title="{{itemData.item['deviceIconData'].title}}" class="{{itemData.item['deviceIconData'].icon}}"></div>
+           </ws:if>
+       </div>
+    </ws:contentTemplate>
+</ws:partial>

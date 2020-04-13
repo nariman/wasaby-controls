@@ -1,0 +1,54 @@
+<div class="DevicesInfo-wrapper">
+        <div class="DevicesInfo-List-wrapper">
+            <Controls.scroll:Container>
+                <Controls.grid:View
+                        backgroundStyle="default"
+                        rowSeparatorVisibility="true"
+                        filter="{{_filter}}"
+                        keyProperty="id"
+                        source="{{_viewSourceDevicesInfo}}"
+                        columns="{{_columns}}"
+                        itemActions="{{_itemActions}}"
+                        itemActionsClass="controls-itemActionsV_position_topRight"/>
+            </Controls.scroll:Container>
+            <div class="DevicesInfo-button-wrapper">
+                <Controls.toggle:BigSeparator on:click="_toggleDevices()" value="{{_devicesShown}}"/>
+            </div>
+        </div>
+        <div class="DevicesInfo-List-wrapper">
+            <div class="DeviceInfo-header">
+                <Controls.heading:Title caption="Заблокированные устройства" readOnly="{{true}}" fontColorStyle="primary" fontSize="3xl"/>
+            </div>
+            <Controls.scroll:Container>
+                <Controls.grid:View
+                        rowSeparatorVisibility="true"
+                        filter="{{_blockedDevicesFilter}}"
+                        keyProperty="id"
+                        source="{{_viewSourceDevicesInfo}}"
+                        columns="{{_columns}}"
+                        itemActions="{{_itemActionBlockedDevices}}"
+                        itemActionsClass="controls-itemActionsV_position_topRight"/>
+            </Controls.scroll:Container>
+            <div class="DevicesInfo-button-wrapper">
+                <Controls.toggle:BigSeparator on:click="_toggleBlockedDevices()" value="{{_blockedDevicesShown}}"/>
+            </div>
+        </div>
+        <div class="DevicesInfo-List-wrapper">
+           <div class="DeviceInfo-header">
+               <Controls.heading:Title caption="Неудачные попытки" readOnly="{{true}}" fontColorStyle="primary" fontSize="3xl"/>
+           </div>
+            <Controls.scroll:Container>
+                <Controls.grid:View
+                        rowSeparatorVisibility="true"
+                        keyProperty="id"
+                        filter="{{_failedTriesFilter}}"
+                        source="{{_viewSourceDevicesInfo}}"
+                        columns="{{_columns}}"
+                        itemActions="{{_itemActionFailedTries}}"
+                        itemActionsClass="controls-itemActionsV_position_topRight"/>
+            </Controls.scroll:Container>
+            <div class="DevicesInfo-button-wrapper">
+                <Controls.toggle:BigSeparator on:click="_toggleFailedTries()" value="{{_failedTriesShown}}"/>
+            </div>
+        </div>
+</div>

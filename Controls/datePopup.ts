@@ -436,7 +436,7 @@ var Component = BaseControl.extend([EventProxyMixin], {
 });
 
 Component._private = _private;
-Component._theme = ['Controls/datePopup'];
+Component._theme = ['Controls/datePopup', 'Controls/calendar'];
 
 Component.SELECTION_TYPES = IRangeSelectable.SELECTION_TYPES;
 Component.HEADER_TYPES = HEADER_TYPES;
