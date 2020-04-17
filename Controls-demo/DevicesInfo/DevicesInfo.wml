@@ -4,9 +4,11 @@
                 <Controls.grid:View
                         backgroundStyle="default"
                         rowSeparatorVisibility="true"
-                        filter="{{_filter}}"
+                        navigation="{{_navigation}}"
+                        name="devices"
                         keyProperty="id"
-                        source="{{_viewSourceDevicesInfo}}"
+                        markerVisibility="hidden"
+                        source="{{_viewSourceDevices}}"
                         columns="{{_columns}}"
                         itemActions="{{_itemActions}}"
                         itemActionsClass="controls-itemActionsV_position_topRight"/>
@@ -22,9 +24,11 @@
             <Controls.scroll:Container>
                 <Controls.grid:View
                         rowSeparatorVisibility="true"
-                        filter="{{_blockedDevicesFilter}}"
                         keyProperty="id"
-                        source="{{_viewSourceDevicesInfo}}"
+                        navigation="{{_blockedDevicesNavigation}}"
+                        name="blockedDevices"
+                        markerVisibility="hidden"
+                        source="{{_viewSourceBlockedDevices}}"
                         columns="{{_columns}}"
                         itemActions="{{_itemActionBlockedDevices}}"
                         itemActionsClass="controls-itemActionsV_position_topRight"/>
@@ -41,8 +45,10 @@
                 <Controls.grid:View
                         rowSeparatorVisibility="true"
                         keyProperty="id"
-                        filter="{{_failedTriesFilter}}"
-                        source="{{_viewSourceDevicesInfo}}"
+                        navigation="{{_failedTriesNavigation}}"
+                        name="failedTries"
+                        markerVisibility="hidden"
+                        source="{{_viewSourceFailedTries}}"
                         columns="{{_columns}}"
                         itemActions="{{_itemActionFailedTries}}"
                         itemActionsClass="controls-itemActionsV_position_topRight"/>

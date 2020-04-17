@@ -3,6 +3,8 @@ import {Memory} from 'Types/source';
 import 'css!Controls-demo/Controls-demo';
 import 'css!Controls-demo/DevicesInfo/DevicesInfo';
 import {date as format} from 'Types/formatter';
+import {INavigationOptionValue, INavigationSourceConfig} from 'Controls/interface';
+import {RecordSet} from 'Types/collection';
 
 import {getDevicesTrusted, getActionsForDevices, getColumns, getActionsForBlockedDevices, getActionsForFailedTries} from 'Controls-demo/DevicesInfo/testingHelper';
 
@@ -20,81 +22,155 @@ export default class extends Control {
     private _blockedDevicesShown: boolean;
     private _devicesShown: boolean;
     private _failedTriesShown: boolean;
+    protected _navigation: INavigationOptionValue<INavigationSourceConfig>;
     protected _template: TemplateFunction = Template;
     protected _viewSourceDevicesInfo: Memory;
     protected _itemAction;
     protected _columns: INoStickyLadderColumn[] = getColumns();
 
     protected _beforeMount(options?: {}, contexts?: object, receivedState?: void): Promise<void> | void {
-        this.hello ='hello';
-        this._filter = {
-            id: [0, 1, 2]
+        this._navigation = {
+            source: 'page',
+            view: 'demand',
+            sourceConfig: {
+                pageSize: 3,
+                page: 0,
+                hasMore: false
+            }
         };
 
-        this._failedTriesFilter = {
-            id: [0, 1, 2]
+        this._blockedDevicesNavigation = {
+            source: 'page',
+            view: 'demand',
+            sourceConfig: {
+                pageSize: 3,
+                page: 0,
+                hasMore: false
+            }
         };
 
-        this._blockedDevicesFilter = {
-            id: [0, 1, 2]
+        this._failedTriesNavigation = {
+            source: 'page',
+            view: 'demand',
+            sourceConfig: {
+                pageSize: 3,
+                page: 0,
+                hasMore: false
+            }
         };
+
         this._failedTriesShown = false;
         this._blockedDevicesShown = false;
         this._devicesShown = false;
-
-        this._arrowState = true;
 
         this._itemActions = getActionsForDevices();
         this._itemActionFailedTries = getActionsForFailedTries();
         this._itemActionBlockedDevices = getActionsForBlockedDevices();
 
-         this._viewSourceDevicesInfo = new Memory({
-            keyProperty: 'Blocked',
-            data: getDevicesTrusted().getData()
+        if(receivedState) {
+            this._setSource(receivedState);
+        } else {
+            return new Promise((resolve) => {
+                const items = new Memory({
+                        keyProperty: 'id',
+                        data: getDevicesTrusted().getData()
+                    });
+                const devices = new RecordSet({
+                    rawData: items.data.filter((item) => {
+                        if(item['testType'] === 0) {
+                            this._formatData(item);
+                            return true;
+                        }
+                    }),
+                    keyProperty: 'id'
+                });
+                const blockedDevices = new RecordSet({
+                    rawData: items.data.filter((item) => {
+                        if (item['testType'] === 1) {
+                            this._formatData(item);
+                            return true;
+                        }
+                    }),
+                    keyProperty: 'id'
+                });
+
+                const failedTries = new RecordSet({
+                    rawData: items.data.filter((item) => {
+                        if (item['testType'] === 2) {
+                            this._formatData(item);
+                            return true;
+                        }
+                    }),
+                    keyProperty: 'id'
+                });
+
+                const fullInfo = {devices: devices, blockedDevices: blockedDevices, failedTries: failedTries};
+
+                this._setSource(fullInfo);
+                resolve(fullInfo);
+            });
+        }
+    }
+    private _formatData(item): void {
+        item['ПоследнийВход'] = format(new Date(item['ПоследнийВход']), format.FULL_DATE_SHORT_TIME);
+        item['entryTypeIconData'] = this._getEntryTypeIcon(item);
+        item['deviceIconData'] = {
+            icon: this._getDeviceIconTypeClass(item),
+            title: this._getDeviceIconTypeTitle(item)
+        };
+    }
+
+    private _setSource(state): void {
+        this._viewSourceDevices = new Memory({
+            keyProperty: 'id',
+            data: state.devices.getRawData()
         });
-        this._viewSourceDevicesInfo.data.forEach((item)=>{
-            item['ПоследнийВход'] = new Date(item['ПоследнийВход']);
-            item.format = format;
-            item['entryTypeIconData'] = this._getEntryTypeIcon(item);
-            // item['entryIconData'] = this._getEntryIconData(item);
-            item['deviceIconData'] = {
-                icon: this._getDeviceIconTypeClass(item),
-                title: this._getDeviceIconTypeTitle(item)
-            };
+
+        this._viewSourceBlockedDevices = new Memory({
+            keyProperty: 'id',
+            data: state.blockedDevices.getRawData()
+        });
+
+        this._viewSourceFailedTries = new Memory({
+            keyProperty: 'id',
+            data: state.failedTries.getRawData()
         });
     }
 
     private _toggleDevices(): void {
-        if (this._devicesShown) {
-            this._filter = {
-                id: [0, 1, 2]
-            };
-        } else {
-            this._filter = null;
+        if (this._viewSourceDevices.data.length > 3) {
+            if (this._devicesShown) {
+                this._navigation.sourceConfig.pageSize = 3;
+            } else {
+                this._navigation.sourceConfig.pageSize = this._viewSourceDevices.data.length;
+            }
+            this._children.devices.reload();
+            this._devicesShown = !this._devicesShown;
         }
-        this._devicesShown = !this._devicesShown;
     }
 
     private _toggleBlockedDevices(): void {
-        if (this._blockedDevicesShown) {
-            this._blockedDevicesFilter = {
-                id: [0, 1, 2]
-            };
-        } else {
-            this._blockedDevicesFilter = null;
+        if (this._viewSourceBlockedDevices.data.length > 3) {
+            if (this._blockedDevicesShown) {
+                this._blockedDevicesNavigation.sourceConfig.pageSize = 3;
+            } else {
+                this._blockedDevicesNavigation.sourceConfig.pageSize = this._viewSourceBlockedDevices.data.length;
+            }
+            this._children.blockedDevices.reload();
+            this._blockedDevicesShown = !this._blockedDevicesShown;
         }
-        this._blockedDevicesShown = !this._blockedDevicesShown;
     }
 
     private _toggleFailedTries(): void {
-        if (this._failedTriesShown) {
-            this._failedTriesFilter = {
-                id: [0, 1, 2]
-            };
-        } else {
-            this._failedTriesFilter = null;
+        if (this._viewSourceFailedTries.data.length > 3) {
+            if (this._failedTriesShown) {
+                this._failedTriesNavigation.sourceConfig.pageSize = 3;
+            } else {
+                this._failedTriesNavigation.sourceConfig.pageSize = this._viewSourceFailedTries.data.length;
+            }
+            this._children.failedTries.reload();
+            this._failedTriesShown = !this._failedTriesShown;
         }
-        this._failedTriesShown = !this._failedTriesShown;
     }
 
     _getEntryTypeIcon(item) {
