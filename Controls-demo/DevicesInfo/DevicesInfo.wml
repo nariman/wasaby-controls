@@ -6,6 +6,7 @@
                         rowSeparatorVisibility="true"
                         navigation="{{_navigation}}"
                         name="devices"
+                        on:actionClick="_actionDevicesClick()"
                         keyProperty="id"
                         markerVisibility="hidden"
                         source="{{_viewSourceDevices}}"
@@ -23,6 +24,7 @@
             </div>
             <Controls.scroll:Container>
                 <Controls.grid:View
+                        on:actionClick="_actionBlockedDevicesClick()"
                         rowSeparatorVisibility="true"
                         keyProperty="id"
                         navigation="{{_blockedDevicesNavigation}}"
@@ -43,6 +45,7 @@
            </div>
             <Controls.scroll:Container>
                 <Controls.grid:View
+                        on:actionClick="_actionFailedTriesClick()"
                         rowSeparatorVisibility="true"
                         keyProperty="id"
                         navigation="{{_failedTriesNavigation}}"

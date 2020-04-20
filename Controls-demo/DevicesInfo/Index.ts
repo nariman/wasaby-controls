@@ -1,10 +1,11 @@
 import {Control, TemplateFunction} from 'UI/Base';
-import {Memory} from 'Types/source';
+import {Memory, SbisService, ICrud} from 'Types/source';
 import 'css!Controls-demo/Controls-demo';
 import 'css!Controls-demo/DevicesInfo/DevicesInfo';
 import {date as format} from 'Types/formatter';
 import {INavigationOptionValue, INavigationSourceConfig} from 'Controls/interface';
 import {RecordSet} from 'Types/collection';
+import RecordSynchronizer = require('Controls/Utils/RecordSynchronizer');
 
 import {getDevicesTrusted, getActionsForDevices, getColumns, getActionsForBlockedDevices, getActionsForFailedTries} from 'Controls-demo/DevicesInfo/testingHelper';
 
@@ -29,6 +30,7 @@ export default class extends Control {
     protected _columns: INoStickyLadderColumn[] = getColumns();
 
     protected _beforeMount(options?: {}, contexts?: object, receivedState?: void): Promise<void> | void {
+
         this._navigation = {
             source: 'page',
             view: 'demand',
@@ -67,7 +69,7 @@ export default class extends Control {
         this._itemActionFailedTries = getActionsForFailedTries();
         this._itemActionBlockedDevices = getActionsForBlockedDevices();
 
-        if(receivedState) {
+        if (receivedState) {
             this._setSource(receivedState);
         } else {
             return new Promise((resolve) => {
@@ -120,6 +122,36 @@ export default class extends Control {
         };
     }
 
+    protected _actionDevicesClick(e, action, item, container) {
+        switch (action.id) {
+            case 0:
+                this._clearSessionDevice(item);
+                break;
+            case 1:
+                this._switchLock(item, true , true);
+                break;
+            case 3:
+                this._changeType(item, 1);
+                break;
+            case 4:
+                this._changeType(item, 2);
+                break;
+            case 5:
+                this._changeType(item, 3);
+                break;
+            case 6:
+                this._changeType(item, 4);
+                break;
+        }
+    }
+    protected _actionBlockedDevicesClick(e, action, item, container) {
+        this._switchLock(item, false);
+    }
+
+    protected _actionFailedTriesClick(e, action, item, container) {
+        this._switchLock(item, true);
+    }
+
     private _setSource(state): void {
         this._viewSourceDevices = new Memory({
             keyProperty: 'id',
@@ -135,6 +167,109 @@ export default class extends Control {
             keyProperty: 'id',
             data: state.failedTries.getRawData()
         });
+    }
+
+    private _getBLObject(name): ICrud {
+        return new SbisService({
+            endpoint: name || "ДоверенноеУстройство"
+        });
+
+    }
+
+    private _switchLock(item, lock, lockFromDevices): void {
+        //Демо реализация
+        if (lock) {
+            if (lockFromDevices) {
+                RecordSynchronizer.deleteRecord(
+                    new RecordSet({rawData: this._viewSourceDevices.data, keyProperty: 'id'}),
+                    item.getId());
+                this._children.devices.reload();
+            } else {
+                RecordSynchronizer.deleteRecord(
+                    new RecordSet({rawData: this._viewSourceFailedTries.data, keyProperty: 'id'}),
+                    item.getId());
+                this._children.failedTries.reload();
+            }
+            RecordSynchronizer.addRecord(item, {},
+                 new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: 'id'}));
+            this._children.blockedDevices.reload();
+        } else {
+            RecordSynchronizer.deleteRecord(
+                new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: 'id'}), item.getId());
+            this._children.blockedDevices.reload();
+        }
+        //Настоящая раелизация
+        // this._getBLObject().call(lock? "Lock" : "Unlock", {
+        //     "id": item.get('Пользователь')
+        // }).addCallback(() => {
+        //     this._children.devices.reload();
+        // }).addErrback(function () {
+        //     console.error(lock ? "Не удалось заблокировать!" : "Не удалось разблокировать!");
+        // });
+    }
+
+    //Такого нет в новой версии
+    // private _switchTrusted(event, item, trust, child) {
+    //     this._getBLObject().call("Сменить", {
+    //         "Ид": item["id"],
+    //         "Доверия": trust,
+    //         "ИдЮз": item['Пользователь']
+    //     }).addCallback(function () {
+    //         this._children.child.reload();
+    //     }).addErrBack(function() {
+    //         console.log("Не удалось сменить доверие");
+    //     });
+    // }
+
+    private _changeType(item, type) {
+        let changeType = () => {
+            this._getBLObject().call('ChangeType', {
+                device_id: item.get('type'),
+                device_type: type
+            }).addCallBack(function() {
+                this._children.child.reload();
+            }).addErrBack(function() {
+                console.log('Не удалось поменять тип устройства');
+            });
+        };
+        if (item['type'] === 1) {
+            new SbisService({
+                endpoint: 'UnproductiveLog'
+            }).call('GetSettings', {}).addCallBack(function(result) {
+                if (result && result.getRow && result.getRow().get('IsEnabled')) {
+                    //Поддверждение
+                    console.log('Изменив статус устройства на рабочий, вы разрешаете системе вести учет времени использования программ и посещения сайтов с этого устройства.');
+                    console.log('Сохранить изменения?');
+                    changeType();
+                } else {
+                    changeType();
+                }
+            }).addErrBack(function () {
+                changeType();
+            });
+        } else {
+            changeType();
+        }
+    }
+
+    private _clearSessionDevice(item) {
+        let clearSession = () => {
+            this._getBLObject().call("ClearSession", {
+                "key" : item.get("@УстройстваПользователя")
+            }).addCallBack(() => {
+                this._children.devices.reload();
+            }).addErrback(() => {
+                console.log('Не удалось завершить сессию');
+            });
+        };
+
+        if (item['Мое']) {
+            console.log('Завершить текущий сеанс?');
+            //Да или Нет
+            clearSession();
+        } else {
+            clearSession();
+        }
     }
 
     private _toggleDevices(): void {

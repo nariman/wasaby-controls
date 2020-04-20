@@ -730,35 +730,35 @@ function getActionsForDevices(): IItemAction[] {
             icon: 'icon-Lock',
             iconStyle: 'danger'
         }, {
-            id: 3,
+            id: 2,
             title: 'Статус устройства',
             'parent@': true,
             showType: showType.MENU,
             parent : null
         }, {
-            id: 4,
+            id: 3,
             title: 'Рабочий компьютер',
             icon: 'icon-TFComputer',
             showType: showType.MENU,
-            parent: 3
+            parent: 2
         }, {
-            id: 5,
+            id: 4,
             title: 'Домашнее устройство',
             icon: 'icon-Home',
             showType: showType.MENU,
-            parent: 3
+            parent: 2
         }, {
-            id: 6,
+            id: 5,
             title: 'Мобильное устройство',
             icon: 'icon-PhoneCell',
             showType: showType.MENU,
-            parent: 3
+            parent: 2
         }, {
-            id: 7,
+            id: 6,
             title: 'Не определено',
             icon: 'icon-QuestionNew',
             showType: showType.MENU,
-            parent: 3
+            parent: 2
         }
     ];
 }
