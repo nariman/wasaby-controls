@@ -18,7 +18,7 @@
                 <Controls.toggle:BigSeparator on:click="_toggleDevices()" value="{{_devicesShown}}"/>
             </div>
         </div>
-        <div class="DevicesInfo-List-wrapper">
+        <div class="DevicesInfo-List-wrapper {{_blockedDevicesInvisible? 'DevicesInfo-wrapper-invisible'}}">
             <div class="DeviceInfo-header">
                 <Controls.heading:Title caption="Заблокированные устройства" readOnly="{{true}}" fontColorStyle="primary" fontSize="3xl"/>
             </div>
@@ -39,7 +39,7 @@
                 <Controls.toggle:BigSeparator on:click="_toggleBlockedDevices()" value="{{_blockedDevicesShown}}"/>
             </div>
         </div>
-        <div class="DevicesInfo-List-wrapper">
+        <div class="DevicesInfo-List-wrapper {{_failedTriesInvisible? 'DevicesInfo-wrapper-invisible'}}">
            <div class="DeviceInfo-header">
                <Controls.heading:Title caption="Неудачные попытки" readOnly="{{true}}" fontColorStyle="primary" fontSize="3xl"/>
            </div>

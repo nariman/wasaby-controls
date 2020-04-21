@@ -61,6 +61,10 @@ export default class extends Control {
             }
         };
 
+        this._blockedDevicesInvisible = false;
+
+        this._failedTriesInvisible = false;
+
         this._failedTriesShown = false;
         this._blockedDevicesShown = false;
         this._devicesShown = false;
@@ -162,11 +166,16 @@ export default class extends Control {
             keyProperty: 'id',
             data: state.blockedDevices.getRawData()
         });
-
+        if (!state.blockedDevices.getRawData()) {
+            this._blockedDevicesInvisible = true;
+        }
         this._viewSourceFailedTries = new Memory({
             keyProperty: 'id',
             data: state.failedTries.getRawData()
         });
+        if (!state.failedTries.getRawData()) {
+            this._failedTriesInvisible = true;
+        }
     }
 
     private _getBLObject(name): ICrud {
@@ -188,16 +197,25 @@ export default class extends Control {
                 RecordSynchronizer.deleteRecord(
                     new RecordSet({rawData: this._viewSourceFailedTries.data, keyProperty: 'id'}),
                     item.getId());
+                if (!this._viewSourceFailedTries.data.length) {
+                    this._failedTriesInvisible = true;
+                }
                 this._children.failedTries.reload();
             }
+
+            this._blockedDevicesInvisible = false;
             RecordSynchronizer.addRecord(item, {},
                  new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: 'id'}));
             this._children.blockedDevices.reload();
         } else {
             RecordSynchronizer.deleteRecord(
                 new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: 'id'}), item.getId());
+                if (!this._viewSourceBlockedDevices.data.length) {
+                    this._blockedDevicesInvisible = true;
+                }
             this._children.blockedDevices.reload();
         }
+        this._forceUpdate();
         //Настоящая раелизация
         // this._getBLObject().call(lock? "Lock" : "Unlock", {
         //     "id": item.get('Пользователь')
