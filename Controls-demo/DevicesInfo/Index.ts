@@ -7,7 +7,7 @@ import {INavigationOptionValue, INavigationSourceConfig} from 'Controls/interfac
 import {RecordSet} from 'Types/collection';
 import RecordSynchronizer = require('Controls/Utils/RecordSynchronizer');
 
-import {getDevicesTrusted, getActionsForDevices, getColumns, getActionsForBlockedDevices, getActionsForFailedTries} from 'Controls-demo/DevicesInfo/testingHelper';
+import {getActionsForDevices, getColumns, getActionsForBlockedDevices, getActionsForFailedTries, getLockedDevices, getFailingAuth, getActivityDevices} from 'Controls-demo/DevicesInfo/testingHelper';
 
 import * as Template from 'wml!Controls-demo/DevicesInfo/DevicesInfo';
 
@@ -17,16 +17,19 @@ interface INoStickyLadderColumn {
 }
 
 export default class extends Control {
-    private  _filter: {};
-    private  _failedTriesFilter: {};
-    private  _blockedDevicesFilter: {};
     private _blockedDevicesShown: boolean;
     private _devicesShown: boolean;
     private _failedTriesShown: boolean;
+
+    private _blockedDevicesInvisible: boolean;
+    private _failedTriesInvisible: boolean;
+
     protected _navigation: INavigationOptionValue<INavigationSourceConfig>;
     protected _template: TemplateFunction = Template;
     protected _viewSourceDevicesInfo: Memory;
-    protected _itemAction;
+    protected _itemActions;
+    protected _itemActionFailedTries;
+    protected _itemActionBlockedDevices;
     protected _columns: INoStickyLadderColumn[] = getColumns();
 
     protected _beforeMount(options?: {}, contexts?: object, receivedState?: void): Promise<void> | void {
@@ -62,7 +65,6 @@ export default class extends Control {
         };
 
         this._blockedDevicesInvisible = false;
-
         this._failedTriesInvisible = false;
 
         this._failedTriesShown = false;
@@ -77,35 +79,25 @@ export default class extends Control {
             this._setSource(receivedState);
         } else {
             return new Promise((resolve) => {
-                const items = new Memory({
-                        keyProperty: 'id',
-                        data: getDevicesTrusted().getData()
-                    });
                 const devices = new RecordSet({
-                    rawData: items.data.filter((item) => {
-                        if(item['testType'] === 0) {
+                    rawData: getActivityDevices().map((item) => {
                             this._formatData(item);
-                            return true;
-                        }
+                            return item;
                     }),
                     keyProperty: 'id'
                 });
                 const blockedDevices = new RecordSet({
-                    rawData: items.data.filter((item) => {
-                        if (item['testType'] === 1) {
+                    rawData: getLockedDevices().map((item) => {
                             this._formatData(item);
-                            return true;
-                        }
+                            return item;
                     }),
                     keyProperty: 'id'
                 });
 
                 const failedTries = new RecordSet({
-                    rawData: items.data.filter((item) => {
-                        if (item['testType'] === 2) {
+                    rawData: getFailingAuth().map((item) => {
                             this._formatData(item);
-                            return true;
-                        }
+                            return item;
                     }),
                     keyProperty: 'id'
                 });
@@ -118,7 +110,7 @@ export default class extends Control {
         }
     }
     private _formatData(item): void {
-        item['ПоследнийВход'] = format(new Date(item['ПоследнийВход']), format.FULL_DATE_SHORT_TIME);
+        item['Date'] = format(new Date(item['Date']), format.FULL_DATE_SHORT_TIME);
         item['entryTypeIconData'] = this._getEntryTypeIcon(item);
         item['deviceIconData'] = {
             icon: this._getDeviceIconTypeClass(item),
@@ -126,7 +118,7 @@ export default class extends Control {
         };
     }
 
-    protected _actionDevicesClick(e, action, item, container) {
+    protected _actionDevicesClick(event: Event, action, item): void {
         switch (action.id) {
             case 0:
                 this._clearSessionDevice(item);
@@ -148,11 +140,11 @@ export default class extends Control {
                 break;
         }
     }
-    protected _actionBlockedDevicesClick(e, action, item, container) {
+    protected _actionBlockedDevicesClick(e, action, item, container): void {
         this._switchLock(item, false);
     }
 
-    protected _actionFailedTriesClick(e, action, item, container) {
+    protected _actionFailedTriesClick(e, action, item, container): void {
         this._switchLock(item, true);
     }
 
@@ -190,26 +182,26 @@ export default class extends Control {
         if (lock) {
             if (lockFromDevices) {
                 RecordSynchronizer.deleteRecord(
-                    new RecordSet({rawData: this._viewSourceDevices.data, keyProperty: 'id'}),
+                    new RecordSet({rawData: this._viewSourceDevices.data, keyProperty: '@Id'}),
                     item.getId());
                 this._children.devices.reload();
             } else {
                 RecordSynchronizer.deleteRecord(
-                    new RecordSet({rawData: this._viewSourceFailedTries.data, keyProperty: 'id'}),
+                    new RecordSet({rawData: this._viewSourceFailedTries.data, keyProperty: '@Id'}),
                     item.getId());
                 if (!this._viewSourceFailedTries.data.length) {
                     this._failedTriesInvisible = true;
                 }
                 this._children.failedTries.reload();
             }
-
+            item._$rawData().Blocked = true;
             this._blockedDevicesInvisible = false;
             RecordSynchronizer.addRecord(item, {},
-                 new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: 'id'}));
+                 new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: '@Id'}));
             this._children.blockedDevices.reload();
         } else {
             RecordSynchronizer.deleteRecord(
-                new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: 'id'}), item.getId());
+                new RecordSet({rawData: this._viewSourceBlockedDevices.data, keyProperty: '@Id'}), item.getId());
                 if (!this._viewSourceBlockedDevices.data.length) {
                     this._blockedDevicesInvisible = true;
                 }
@@ -242,15 +234,15 @@ export default class extends Control {
     private _changeType(item, type) {
         let changeType = () => {
             this._getBLObject().call('ChangeType', {
-                device_id: item.get('type'),
-                device_type: type
+                device_id: item.get('DeviceId'),
+                device_type: item['DeviceType']
             }).addCallBack(function() {
                 this._children.child.reload();
             }).addErrBack(function() {
                 console.log('Не удалось поменять тип устройства');
             });
         };
-        if (item['type'] === 1) {
+        if (item['DeviceType'] === 1) {
             new SbisService({
                 endpoint: 'UnproductiveLog'
             }).call('GetSettings', {}).addCallBack(function(result) {
@@ -382,7 +374,7 @@ export default class extends Control {
     _getDeviceIconTypeTitle(item) {
         let title;
 
-        switch (item['type']) {
+        switch (item['DeviceType']) {
             case 1:
                 title = 'Рабочее устройство';
                 break;
@@ -394,16 +386,16 @@ export default class extends Control {
                 break;
         }
 
-        if (item['type']) {
-            if (item['type'] !== 3) {
-                if (item['is_plugin']) {
+        if (item['DeviceType']) {
+            if (item['DeviceType'] !== 3) {
+                if (item['IsPlugin']) {
                     title += ', ' + 'плагин установлен';
                 } else {
                     title += ', ' + 'плагин не установлен';
                 }
             }
         } else {
-            if (item['is_plugin']) {
+            if (item['IsPlugin']) {
                 title = 'Установлен плагин';
             }
         }
@@ -414,9 +406,9 @@ export default class extends Control {
     _getDeviceIconTypeClass(item) {
         let icon;
 
-        switch(item['type']) {
+        switch(item['DeviceType']) {
             case 0:
-                if (item['is_plugin']) {
+                if (item['IsPlugin']) {
                     icon = 'SabyBird';
                 }
                 break;
@@ -431,7 +423,7 @@ export default class extends Control {
                 break;
         }
 
-        return 'icon-16 icon-' + icon + ' icon-' + (item['is_plugin'] && item['type'] !== 3 ? 'done' : 'primary')
+        return 'icon-16 icon-' + icon + ' icon-' + (item['IsPlugin'] && item['type'] !== 3 ? 'done' : 'primary')
                 + ' DevicesTrusted__iconDeviceType';
     }
     // Использовалось в старой версии, возмодно пригодится и сейчас,

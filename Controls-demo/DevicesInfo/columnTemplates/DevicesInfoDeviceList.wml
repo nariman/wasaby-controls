@@ -1,26 +1,26 @@
-<ws:partial template="Controls/grid:ColumnTemplate" attr:class="js-controls-ListView__notEditable controls-Grid__row-cell__content_baseline_L" itemData="{{itemData}}">
+<ws:partial template="Controls/grid:ColumnTemplate" itemData="{{itemData}}">
     <ws:contentTemplate>
-        <ws:if data="{{itemData.item['Мое'] === true || itemData.item['Status'] === 1}}">
-            <div class="icon-16 activity_DevicesTrusted-ListDevice-indicator
-                        activity_DevicesTrusted-ListDevice-indicator-active"></div>
+        <ws:if data="{{itemData.item['CurrentDevice'] || itemData.item['Status'] === 2}}">
+            <div class="icon-16 DevicesInfo-DeviceList-indicator
+                        DevicesInfo-DeviceList-indicator-active"></div>
         </ws:if>
-        <ws:else data="{{itemData.item['Status'] === false}}">
-            <div class="icon-16 activity_DevicesTrusted-ListDevice-indicator
-                        activity_DevicesTrusted-ListDevice-indicator-inactive"></div>
+        <ws:else data="{{itemData.item['Status'] === 1}}">
+            <div class="icon-16 DevicesInfo-DeviceList-indicator
+                        DevicesInfo-DeviceList-indicator-inactive"></div>
         </ws:else>
        <div class="DeviceInfo-deviceItem-wrapper">
-           <div class="activity-DevicesTrusted_ListDevice-device">
-               {{itemData.item['Название']}}
+           <div class="DevicesInfo-DeviceList-name">
+               {{itemData.item['DeviceName']}}
            </div>
 
-           <div class="activity-DevicesTrusted_ListDevice-platform">
-               {{itemData.item['Браузер']}}
+           <div class="DeviceInfo-DeviceList-platform">
+               {{itemData.item['Browser']}}
            </div>
-<!--           <ws:if data="{{itemData.item['error']}}">-->
-<!--               <div class="activity-DevicesTrusted_ListDevice-error">-->
-<!--                   {{itemData.item['error']}}-->
-<!--               </div>-->
-<!--           </ws:if>-->
+           <ws:if data="{{itemData.item['Cause'] && !itemData.item['Blocked']}}">
+               <div class="DevicesInfo-DeviceList-error">
+                   {{itemData.item['Cause']}}
+               </div>
+           </ws:if>
        </div>
     </ws:contentTemplate>
 </ws:partial>

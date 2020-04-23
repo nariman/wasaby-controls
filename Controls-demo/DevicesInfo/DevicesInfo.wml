@@ -7,18 +7,18 @@
                         navigation="{{_navigation}}"
                         name="devices"
                         on:actionClick="_actionDevicesClick()"
-                        keyProperty="id"
+                        keyProperty="@Id"
                         markerVisibility="hidden"
                         source="{{_viewSourceDevices}}"
                         columns="{{_columns}}"
                         itemActions="{{_itemActions}}"
                         itemActionsClass="controls-itemActionsV_position_topRight"/>
             </Controls.scroll:Container>
-            <div class="DevicesInfo-button-wrapper">
+            <div class="DevicesInfo-button-wrapper {{_viewSourceDevices.data.length <= 3? 'DevicesInfo-invisible'}}">
                 <Controls.toggle:BigSeparator on:click="_toggleDevices()" value="{{_devicesShown}}"/>
             </div>
         </div>
-        <div class="DevicesInfo-List-wrapper {{_blockedDevicesInvisible? 'DevicesInfo-wrapper-invisible'}}">
+        <div class="DevicesInfo-List-wrapper {{_blockedDevicesInvisible? 'DevicesInfo-invisible'}}">
             <div class="DeviceInfo-header">
                 <Controls.heading:Title caption="Заблокированные устройства" readOnly="{{true}}" fontColorStyle="primary" fontSize="3xl"/>
             </div>
@@ -26,7 +26,7 @@
                 <Controls.grid:View
                         on:actionClick="_actionBlockedDevicesClick()"
                         rowSeparatorVisibility="true"
-                        keyProperty="id"
+                        keyProperty="@Id"
                         navigation="{{_blockedDevicesNavigation}}"
                         name="blockedDevices"
                         markerVisibility="hidden"
@@ -35,11 +35,11 @@
                         itemActions="{{_itemActionBlockedDevices}}"
                         itemActionsClass="controls-itemActionsV_position_topRight"/>
             </Controls.scroll:Container>
-            <div class="DevicesInfo-button-wrapper">
+            <div class="DevicesInfo-button-wrapper {{_viewSourceBlockedDevices.data.length <= 3? 'DevicesInfo-invisible'}}">
                 <Controls.toggle:BigSeparator on:click="_toggleBlockedDevices()" value="{{_blockedDevicesShown}}"/>
             </div>
         </div>
-        <div class="DevicesInfo-List-wrapper {{_failedTriesInvisible? 'DevicesInfo-wrapper-invisible'}}">
+        <div class="DevicesInfo-List-wrapper {{_failedTriesInvisible? 'DevicesInfo-invisible'}}">
            <div class="DeviceInfo-header">
                <Controls.heading:Title caption="Неудачные попытки" readOnly="{{true}}" fontColorStyle="primary" fontSize="3xl"/>
            </div>
@@ -47,7 +47,7 @@
                 <Controls.grid:View
                         on:actionClick="_actionFailedTriesClick()"
                         rowSeparatorVisibility="true"
-                        keyProperty="id"
+                        keyProperty="@Id"
                         navigation="{{_failedTriesNavigation}}"
                         name="failedTries"
                         markerVisibility="hidden"
@@ -56,7 +56,7 @@
                         itemActions="{{_itemActionFailedTries}}"
                         itemActionsClass="controls-itemActionsV_position_topRight"/>
             </Controls.scroll:Container>
-            <div class="DevicesInfo-button-wrapper">
+            <div class="DevicesInfo-button-wrapper {{_viewSourceFailedTries.data.length <= 3? 'DevicesInfo-invisible'}}">
                 <Controls.toggle:BigSeparator on:click="_toggleFailedTries()" value="{{_failedTriesShown}}"/>
             </div>
         </div>

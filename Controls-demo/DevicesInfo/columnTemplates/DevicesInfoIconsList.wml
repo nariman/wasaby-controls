@@ -1,6 +1,6 @@
 <ws:partial template="Controls/grid:ColumnTemplate" itemData="{{itemData}}">
     <ws:contentTemplate>
-       <div class="DeviceInfo-iconList-wrapper">
+       <div class="DeviceInfo-IconsList-wrapper">
            <ws:if data="{{itemData.item['entryTypeIconData'].icon}}">
                <div title="{{itemData.item['entryTypeIconData'].title}}" class="{{itemData.item['entryTypeIconData'].icon}}"></div>
            </ws:if>

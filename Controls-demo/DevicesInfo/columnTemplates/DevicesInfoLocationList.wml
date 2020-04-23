@@ -1,8 +1,8 @@
 <ws:partial template="Controls/grid:ColumnTemplate" attr:class="js-controls-ListView__notEditable controls-Grid__row-cell__content_baseline_L" itemData="{{itemData}}">
     <ws:contentTemplate>
         <div class="DeviceInfo-locationItem-wrapper">
-            <div>{{itemData.item['Город']}}</div>
-            <div class="activity-DevicesTrusted_ListLocation-ip">{{itemData.item['IP']}}</div>
+            <div class="DevicesInfo-LocationList-city">{{itemData.item['City']}}</div>
+            <div class="DevicesInfo-LocationList-ip">{{itemData.item['IP']}}</div>
         </div>
     </ws:contentTemplate>
 </ws:partial>
